@@ -1,0 +1,28 @@
+Possible queries
+
+
+show lowest/average/highest frequencies for whole text (+ which pair is it)
+
+show lowest/average/highest frequencies for a given word (+ a second words [input how many] for this number)
+
+show frequency of a given pair of words
+
+show pairs of words [input how many] that appears in the text more/less frequent than:
+    [number]
+    [average]
+    [pair of words [input them] ]
+    [most/least frequent pairs with word [input word] ]
+
+show which words [input how many] make a pair with word [input word] most/least often (+ show numbers)
+
+show which words [input how many] make a pair with word [input word] more/less(/same) frequent than:
+    [number]
+    [lowest/average/highest in given text]
+    [lowest/average/highest of a given word [input word]]
+    [given pair or words]
+
+show which words [input how many] makes most/least often pair with a word that makes a most/least often pair with word [input word]
+    
+show which words [input how many] makes most/least often pair with a words that makes a most/least often pair in given text
+
+

@@ -1,10 +1,13 @@
 from collections import defaultdict
 import re
+import json
+
 
 class QueryModule:
     def __init__(self, filename):
         self.filename = filename
         self.data = self.load_data()
+        self.last_query_results = []
         
 # This method loads the file and prepare it for query
     def load_data(self):
@@ -24,6 +27,8 @@ class QueryModule:
 
         for line in sorted_data:
             print('; '.join(line))
+        
+        self.last_query_results = sorted_data
 
 #2nd method searches for a pair of words and displays proper line
     
@@ -37,6 +42,14 @@ class QueryModule:
         print("Title: " + self.filename)
         print(f"Description: {self.data[0]}\n")
         
+        if not result:
+            print("No matching pair found.\n")
+        else:
+            for line in result:
+                print('; '.join(line))
+        
+        self.last_query_results = result
+        
         return result
     
     
@@ -48,7 +61,34 @@ class QueryModule:
         print("Title: " + self.filename)
         print(f"Description: {self.data[0]}\n")
         
-        return result          
+        if not result:
+            print(f"\nNo lines containing the word '{word}' found.\n")
+        else:
+            for line in result:
+                print('; '.join(line))
+        
+        self.last_query_results = result
+        
+        return result     
+
+# This method is for json export
+    
+    def save_results_to_json(self, title, description, query_settings, results):
+        result_json = {
+            "data": {
+                "path": f"{title}.json",
+                "title": title,
+                "description": description,
+                **query_settings  # Include all query settings
+            },
+            "results": results
+        }
+
+        # Save the JSON file with the title as the filename
+        with open(f"{title}.json", 'w') as json_file:
+            json.dump(result_json, json_file, indent=2)
+
+  
 
 
 class AnalysisModule:
@@ -92,38 +132,41 @@ def query_interface(filename):
 
         choice = input("\nEnter your choice (1-4): ")
 
+        query_settings = {
+            "for_entire_text": False,
+            "word1": "",
+            "word2": "",
+            "amount": 0,
+            "logarithmic_scale": 0
+        }
+
         if choice == '1':
-            amount = int(input("Enter the amount (0 for all): "))
+            query_settings["for_entire_text"] = True
+            query_settings["amount"] = int(input("Enter the amount (0 for all): "))
             print("\nYou have chosen to search through entire text\n")
-            query1.sort_and_display(amount)
+            query1.sort_and_display(query_settings["amount"])
 
         elif choice == '2':
-            word1 = input("Enter the first word: ")
-            word2 = input("Enter the second word: ")
+            query_settings["word1"] = input("Enter the first word: ")
+            query_settings["word2"] = input("Enter the second word: ")
             print("\nYou have chosen to search for a pair of words\n")
-            result = query1.search_pair(word1, word2)
-            if not result:
-                print("No matching pair found.\n")
-            else:
-                for line in result:
-                    print('; '.join(line))
+            query1.search_pair(query_settings["word1"], query_settings["word2"])
 
-        elif choice == '3':            
-            word = input("Enter the word: ")
-            amount = int(input("Enter the amount (0 for all): "))
-            print("\nYou have chosen to search for a pair of words\n")
-            result = query1.search_word(word, amount)
-            if not result:
-                print(f"\nNo lines containing the word '{word}' found.\n")
-            else:
-                for line in result:
-                    print('; '.join(line))
+        elif choice == '3':
+            query_settings["word1"] = input("Enter the word: ")
+            query_settings["amount"] = int(input("Enter the amount (0 for all): "))
+            print("\nYou have chosen to search for one word\n")
+            query1.search_word(query_settings["word1"], query_settings["amount"])
 
         elif choice == '4':
             break
 
         else:
             print("Invalid choice. Please enter a number between 1 and 4.")
+
+        query1.save_results_to_json(filename, query1.data[0], query_settings, query1.last_query_results)
+
+
 
 def initial_menu():
     while True:

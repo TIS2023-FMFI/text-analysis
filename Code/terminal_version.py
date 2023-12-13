@@ -1,10 +1,12 @@
 from collections import defaultdict
 import re
+import json
 
 class QueryModule:
     def __init__(self, filename):
         self.filename = filename
         self.data = self.load_data()
+        self.for_entire_text = False
 
     def load_json_config(self, json_path):
             with open(json_path, 'r') as json_file:

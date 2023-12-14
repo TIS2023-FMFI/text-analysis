@@ -1,26 +1,12 @@
 from collections import defaultdict
 import re
-import json
+import os
+from datetime import datetime
 
 class QueryModule:
     def __init__(self, filename):
         self.filename = filename
         self.data = self.load_data()
-        self.for_entire_text = False
-
-    def load_json_config(self, json_path):
-            with open(json_path, 'r') as json_file:
-                config_data = json.load(json_file)
-
-            self.path = config_data.get('path')
-            self.title = config_data.get('title')
-            self.description = config_data.get('description')
-            self.for_entire_text = config_data.get('for_entire_text', False)
-            self.word1 = config_data.get('word1')
-            self.word2 = config_data.get('word2')
-            self.amount = config_data.get('amount')
-            self.logarithmic_scale = config_data.get('logarithmic_scale')
-
         
 # This method loads the file and prepare it for query
     def load_data(self):
@@ -96,56 +82,60 @@ class AnalysisModule:
 
 
 
-def query_interface(query_module):
-    print("\n===== Query Menu =====")
-    print("1. Search through entire text")
-    print("2. Search for a pair of words")
-    print("3. Search for a single word")
-    print("4. Back to initial menu")
+def query_interface(filename):
+    query1 = QueryModule(filename)
 
-    choice = input("\nEnter your choice (1-4): ")
+    while True:
+        print("\n===== Query Menu =====")
+        print("1. Search through entire text")
+        print("2. Search for a pair of words")
+        print("3. Search for a single word")
+        print("4. Back to initial menu")
 
-    if choice == '1':
-        amount = int(input("Enter the amount (0 for all): ")) if query_module.for_entire_text else None
-        print("\nYou have chosen to search through entire text\n")
-        query_module.sort_and_display(amount)
+        choice = input("\nEnter your choice (1-4): ")
 
-    elif choice == '2':
-        word1 = query_module.word1
-        word2 = query_module.word2
-        print("\nYou have chosen to search for a pair of words\n")
-        result = query_module.search_pair(word1, word2)
-        if not result:
-            print("No matching pair found.\n")
+        if choice == '1':
+            amount = int(input("Enter the amount (0 for all): "))
+            print("\nYou have chosen to search through entire text\n")
+            query1.sort_and_display(amount)
+
+        elif choice == '2':
+            word1 = input("Enter the first word: ")
+            word2 = input("Enter the second word: ")
+            print("\nYou have chosen to search for a pair of words\n")
+            result = query1.search_pair(word1, word2)
+            if not result:
+                print("No matching pair found.\n")
+            else:
+                for line in result:
+                    print('; '.join(line))
+
+        elif choice == '3':            
+            word = input("Enter the word: ")
+            amount = int(input("Enter the amount (0 for all): "))
+            print("\nYou have chosen to search for a pair of words\n")
+            result = query1.search_word(word, amount)
+            if not result:
+                print(f"\nNo lines containing the word '{word}' found.\n")
+            else:
+                for line in result:
+                    print('; '.join(line))
+
+        elif choice == '4':
+            break
+
         else:
-            for line in result:
-                print('; '.join(line))
-
-    elif choice == '3':
-        word = query_module.word1  # Assuming you want to search a single word here
-        amount = int(input("Enter the amount (0 for all): ")) if query_module.for_entire_text else None
-        print("\nYou have chosen to search for a single word\n")
-        result = query_module.search_word(word, amount)
-        if not result:
-            print(f"\nNo lines containing the word '{word}' found.\n")
-        else:
-            for line in result:
-                print('; '.join(line))
-
-    elif choice == '4':
-        pass  # Do nothing, as we'll go back to the initial menu
-
-    else:
-        print("Invalid choice. Please enter a number between 1 and 4.")
+            print("Invalid choice. Please enter a number between 1 and 4.")
 
 def initial_menu():
     while True:
         print("\n===== Initial Menu =====")
         print("1. Analysis")
-        print("2. Query")
-        print("3. End program")
+        print("2. Delete file")
+        print("3. Query")
+        print("4. End program")
 
-        choice = input("\nEnter your choice (1-3): ")
+        choice = input("\nEnter your choice (1-4): ")
 
         if choice == '1':
             print('\nYou have chosen analysis')
@@ -156,12 +146,35 @@ def initial_menu():
             print('\nAnalysis done')
 
         elif choice == '2':
-            print('\nYou have chosen query')
-            json_path = input("Enter the path to the JSON file: ")
-            query_module = QueryModule(json_path)
-            query_interface(query_module)
+            print('\nYou have chosen to delete a file')
+            file_path_to_delete = input("Enter the path to the file you want to delete: ")
+            confirm = input("Are you sure you want to delete this file? (Y/N): ")
 
+            if confirm.upper() == 'Y':
+                try:
+            # Delete file
+                    os.remove(file_path_to_delete)
+                    print(f"File '{file_path_to_delete}' deleted successfully.")
+            
+            # Dodaj wpis do pliku Deleted_files_list.txt
+                    deletion_info = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {file_path_to_delete}\n"
+                    with open('Deleted_files_list.txt', 'a') as deleted_files_list:
+                        deleted_files_list.write(deletion_info)
+
+                except FileNotFoundError:
+                    print(f"File '{file_path_to_delete}' not found.")
+                except PermissionError:
+                    print(f"Permission denied to delete '{file_path_to_delete}'.")
+            else:
+                print(f"Deletion of '{file_path_to_delete}' canceled.")
+        
+        
         elif choice == '3':
+            print('\nYou have chosen query')
+            filename = input("Enter the filename for query: ")
+            query_interface(filename)
+
+        elif choice == '4':
             print("Program ended. Goodbye!")
             break
 

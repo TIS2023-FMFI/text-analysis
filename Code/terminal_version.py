@@ -2,6 +2,7 @@ from collections import defaultdict
 import re
 import os
 from datetime import datetime
+import json
 
 class QueryModule:
     def __init__(self, filename):
@@ -24,6 +25,15 @@ class QueryModule:
         if amount:
             sorted_data = sorted_data[:amount]
 
+        result_json_filename = f"{datetime.now().strftime('%Y_%m_%d_%H_%M')}_query_entire_text.json"
+        with open(result_json_filename, 'w') as json_file:
+            json.dump({
+                'title': self.filename,                
+                'description': self.data[0],
+                'amount': amount,
+                'results': sorted_data
+            }, json_file, indent=2)
+        
         for line in sorted_data:
             print('; '.join(line))
 
@@ -39,6 +49,14 @@ class QueryModule:
         print("Title: " + self.filename)
         print(f"Description: {self.data[0]}\n")
         
+        result_json_filename = f"{datetime.now().strftime('%Y_%m_%d_%H_%M')}_querywords:_{word1}_{word2}_results.json"
+        with open(result_json_filename, 'w') as json_file:
+            json.dump({
+                'title': self.filename,
+                'description': self.data[0],
+                'results': result
+            }, json_file, indent=2)
+        
         return result
     
     
@@ -49,6 +67,15 @@ class QueryModule:
         
         print("Title: " + self.filename)
         print(f"Description: {self.data[0]}\n")
+        
+        result_json_filename = f"{datetime.now().strftime('%Y_%m_%d_%H_%M')}_queryword:_{word}_results.json"
+        with open(result_json_filename, 'w') as json_file:
+            json.dump({
+                'title': self.filename,
+                'description': self.data[0],
+                'amount': amount,
+                'results': result
+            }, json_file, indent=2)
         
         return result          
 
